@@ -2,31 +2,28 @@ name: Compile Audiophile OTG APK
 
 on:
   push:
-    branches: [ "main", "master" ]
-  workflow_dispatch:
+    tags:
+      - '*'
 
 jobs:
-  build:
+  Gradle:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 24
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '24'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Package APK into ZIP Artifact
-        uses: actions/upload-artifact@v4
-        with:
+    - name: checkout code
+      uses: actions/checkout@v2
+    - name: setup jdk
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+    - name: Make Gradle executable
+      run: chmod +x ./gradlew
+    - name: Build Release APK
+      run: ./gradlew assembleRelease
+    - name: Releasing using Hub
+      uses: sangatdesai/release-apk@main
+      env:
+       GITHUB_TOKEN: ${{ secrets.TOKEN }}
+       APP_FOLDER: app
           name: AudiophileOTG-compiled-apk
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 14
